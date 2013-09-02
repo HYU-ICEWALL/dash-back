@@ -7,7 +7,7 @@ class User(Base):
 	__tablename__ = 'users'
 	idx = Column(Integer, autoincrement=True, primary_key=True, unique=True)
 	username = Column(String(20), unique=True)
-	password = Column(String(128), unique=False)
+	password = Column(String(64), unique=False)
 	fid = Column(String(30), unique=False)
 	major = Column(String(20), unique=False)
 	
@@ -27,4 +27,12 @@ class User(Base):
 		if usr == None:
 			return False
 		
+		return True
+
+	def checkLogin(self, uname, pwd):
+		usr = self.query.filter(User.username==uname, User.password==pwd).first()
+
+		if usr == None:
+			return False
+
 		return True

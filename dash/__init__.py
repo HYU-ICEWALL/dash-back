@@ -1,8 +1,9 @@
 #from flask import render_template
 
 #    return render_template('index.html', name='World')
-from flask import Flask, request, json, Response
+from flask import Flask, request, json, Response, make_response
 from models import User
+from database import db_session
 app = Flask(__name__)
 
 @app.route('/')
@@ -12,13 +13,7 @@ def root():
 	else:
 		return 'False'
 
-@app.route('/api/users', methods=['GET', 'POST'])
-def join():
-    if request.method == 'POST':
-        return do_the_join()
-    else:
-		return 'ddd'
-		
+@app.route('/api/users', methods=['POST'])
 def do_the_join():
 	password = request.json['password']
 	major = request.json['major']
@@ -26,8 +21,8 @@ def do_the_join():
 	fb_id = request.json['fb_id']
 	u = User(email, password, fb_id, major)	
 	
-	if ( u.checkDup() == True ) :
-		return Response('', status=401)
+	if ( u.checkDup(email) == True ) :
+		return Response('', status=409)
 
 	if ( len(password) == 0 or len(email) == 0 ):
 		return Response('', status=400)
@@ -35,7 +30,21 @@ def do_the_join():
 	db_session.add(u)
 	db_session.commit()
 
-	resp = make_response('', status=201)
+	resp = make_response('', 201)
 	resp.headers['Location'] = '/api/users/me'
+
+	return resp
+
+@app.route('/api/login', methods=['POST'])
+def do_login():
+	uname = request.form['email']
+	password = request.form['password']
+	u = User(uname, password)
+	
+	if ( u.checkLogin(uname, password) == True ) :
+		resp = make_response('', 200)
+		resp.headers['Location'] = '/api/users/me'
+	else :
+		resp = make_response('', 404)
 
 	return resp

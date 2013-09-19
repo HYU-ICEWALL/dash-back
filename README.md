@@ -18,4 +18,13 @@ Repository for back-end codes for Dash project.
     (venv)$ pip install -r requirements.txt
     ```
 
-4. Enjoy!
+4. pylibmc gcc error
+
+    ```
+    sudo apt-get install -y libmemcached-dev zlib1g-dev libssl-dev python-dev build-essential
+
+    pip install pylibmc
+    ```
+
+
+5. Enjoy!

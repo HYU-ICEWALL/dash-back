@@ -3,7 +3,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 
-engine = create_engine('mysql+mysqlconnector://flask:f1ask@localhost/flask?charset=utf8', echo=True)
+from conf import db_host, db_id, db_pwd, db_name
+
+engine = create_engine('mysql+mysqlconnector://%s:%s@%s/%s?charset=utf8' % (db_id, db_pwd, db_host, db_name), echo=True)
 
 db_session = scoped_session(sessionmaker(bind=engine))
 

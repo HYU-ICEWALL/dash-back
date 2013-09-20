@@ -3,62 +3,79 @@ import datetime
 from sqlalchemy.sql import select
 from database import Base
 import hashlib
+import string
+import random
 
 class User(Base):
 	__tablename__ = 'users'
 	idx = Column(Integer, autoincrement=True, primary_key=True, unique=True)
-	username = Column(String(20), unique=True)
+	email = Column(String(20), unique=True)
 	password = Column(String(64), unique=False)
 	fid = Column(String(30), unique=False)
 	major = Column(String(20), unique=False)
 	
-	def __init__(self, username='', password='', fid='', major=''):
-		self.username = username
+	def __init__(self, email='', password='', fid='', major='', idx=-1):
+		self.email = email
 		self.password = hashlib.sha256(password).hexdigest()
 		self.fid = fid
 		self.major = major
+		self.idx = idx
 	
 	def getUser(self):
 		dic = {}
 		dic['id'] = self.idx
-		dic['email'] = self.username
+		dic['email'] = self.email
 		dic['fb_id'] = self.fid
 		dic['major'] = self.major
 
 		return dic
-			
-	def __repr__(self):
-		return "User (%s, %s, %s, %s)" % (self.username, self.password, self.fid, self.major)
-
 
 	def checkDup(self):
-		usr = self.query.filter(User.username==self.username).first()
+		usr = self.query.filter(User.email==self.email).first()
 		if usr == None:
 			return False
 		
 		return True
 
 	def checkLogin(self):
-		usr = self.query.filter(User.username==self.username, User.password==self.password).first()
+		usr = self.query.filter(User.email==self.email, User.password==self.password).first()
 		if usr == None:
 			return False
-		self.username = usr.username
+		self.email = usr.email
 		self.fid = usr.fid
 		self.major = usr.major
 		self.idx = usr.idx
 		self.password = '00000000'
 
 		return True
-	def is_authenticated(self) :
-		return True
+	
 
-	def is_active(self):
-		return True
+	def resetPassword(self):
+		chars = string.ascii_letters + string.digits
+		newpwd = ''.join(random.choice(chars) for x in range(10))
+		usr = self.query.filter(User.email == self.email).update({ 'password' : hashlib.sha256(newpwd).hexdigest() })
 
-	def is_anonymous(self):
-		return False
+		if usr == 0:
+			return {"status" : False}
+		else:
+			return {"status" : True, "password" : newpwd}
 
-	def get_id(self):
-		return unicode(self.idx)
+	def delUser(self):
+		usr = self.query.filter(User.email == self.email).delete()
+		
+		if usr == 0:
+			return False
+		else :
+			return True
+			
+	def modify(self, dic):
+		if 'password' in dic:
+			dic['password'] = hashlib.sha256(dic['password']).hexdigest()
 
+		usr = self.query.filter(User.email == self.email).update(dic)
+
+		if usr == 0:
+			return False
+		else:
+			return True
 	

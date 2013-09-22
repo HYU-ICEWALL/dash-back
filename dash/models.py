@@ -6,6 +6,27 @@ import hashlib
 import string
 import random
 
+class Major(Base):
+	__tablename__ = 'majors'
+	code = Column(String(20), unique=True, primary_key=True)
+	name = Column(String(20), unique=True)
+	
+	def __init__(self, code='', name=''):
+		self.code = code
+		self.name = name
+		
+	def getMajor(self):
+		return { "code" : self.code, "name": self.name }
+		
+	def getMajors(self):
+		Majors = self.query.all()
+		ml = []
+		for m in Majors:
+			ml.append( m.getMajor() )
+			
+		return ml
+		
+
 class User(Base):
 	__tablename__ = 'users'
 	idx = Column(Integer, autoincrement=True, primary_key=True, unique=True)
